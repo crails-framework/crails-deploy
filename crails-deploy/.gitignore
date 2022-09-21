@@ -1,0 +1,5 @@
+crails-deploy
+
+# Testscript output directory (can be symlink).
+#
+test-crails-deploy

@@ -1,61 +1,72 @@
 #include "deploy_permissions.hpp"
+#include "freebsd/permission_deploy.hpp"
 
 using namespace std;
 using namespace Crails;
 
+bool ApplicationPermissionDeploy::initialize_target()
+{
+  if (target_type == FreeBSDTarget)
+    interface = new FreeBSDPermissionDeploy(*this);
+  else
+    interface = new PermissionDeployInterface(*this);
+  return true;
+}
+
 void ApplicationPermissionDeploy::set_permissions()
 {
-  set_permissions_on(
+  interface->set_permissions_on(
     runtime_directory,
     "gu+rw,o-rwx"
   );
-  set_permissions_on(
+  interface->set_permissions_on(
     log_directory,
     "gu+rw,o-rwx"
   );
-  set_permissions_on(
+  interface->set_permissions_on(
     root + "/share/" + app_name,
     "gu+r,o-rwx"
   );
-  set_permissions_on(
+  interface->set_permissions_on(
     root + "/bin/" + app_name,
     "gu+rx,o-rwx"
   );
 }
 
-void ApplicationPermissionDeploy::set_permissions_on(const std::string& target, const std::string permissions)
+void PermissionDeployInterface::set_permissions_on(const std::string& target, const std::string permissions, std::string command_prefix)
 {
+  auto channel = ssh.make_channel();
+
+  if (sudo)
+    command_prefix = "sudo " + command_prefix;
   int rc =
-    chown(target) +
-    chgrp(target) +
-    chmod(target, permissions);
+    channel->exec(command_prefix + command_chown(target), null_output) +
+    channel->exec(command_prefix + command_chgrp(target), null_output) +
+    channel->exec(command_prefix + command_chmod(target, permissions), null_output);
   if (rc != 0)
     throw std::runtime_error("could not set permissions");
 }
 
-int ApplicationPermissionDeploy::chown(const std::string& target)
+std::string PermissionDeployInterface::command_chown(const std::string& target)
 {
   stringstream command;
 
-  if (sudo) command << "sudo ";
   command << "chown -R \"" << app_user << "\" \"" << target << '"';
-  return ssh.exec(command.str(), null_output);
+  return command.str();
 }
 
-int ApplicationPermissionDeploy::chgrp(const std::string& target)
+std::string PermissionDeployInterface::command_chgrp(const std::string& target)
 {
   stringstream command;
 
-  if (sudo) command << "sudo ";
   command << "chgrp -R \"" << app_group << "\" \"" << target << '"';
-  return ssh.exec(command.str(), null_output);
+  return command.str();
 }
 
-int ApplicationPermissionDeploy::chmod(const std::string& target, const std::string& permissions)
+std::string PermissionDeployInterface::command_chmod(const std::string& target, const std::string& permissions)
 {
   stringstream command;
 
-  if (sudo) command << "sudo ";
   command << "chmod -R " << permissions << " \"" << target << '"';
-  return ssh.exec(command.str(), null_output);
+  return command.str();
 }

@@ -7,6 +7,7 @@
 #include "deploy_application.hpp"
 #include "deploy_permissions.hpp"
 #include "deploy_user.hpp"
+#include "deploy_service.hpp"
 
 using namespace std;
 using namespace Crails;
@@ -19,7 +20,8 @@ namespace Crails
 class DeployCommand : public Crails::Command,
   private ApplicationUserDeploy,
   private ApplicationPackageDeploy,
-  private ApplicationPermissionDeploy
+  private ApplicationPermissionDeploy,
+  private ApplicationServiceDeploy
 {
 public:
   DeployCommand()
@@ -30,7 +32,7 @@ public:
   {
     options.add_options()
       ("verbose,v",     "enable verbose mode")
-      ("sudo",          "administrative task will require root permissions")
+      ("sudo",          "administrative tasks will require root permissions")
       ("package,p",     boost::program_options::value<string>(), "application package (.tar.gz)")
       ("hostname,h",    boost::program_options::value<string>(), "deployment target")
       ("deploy-user,d", boost::program_options::value<string>(), "user performing the deployment")
@@ -39,7 +41,9 @@ public:
       ("group,g",       boost::program_options::value<string>(), "user group which will run the application")
       ("runtime-path",  boost::program_options::value<string>(), "runtime path (defaults to /var/application-name)")
       ("pubkey", "ssh authentication using rsa public key")
-      ("password",      boost::program_options::value<string>(), "password used for ssh authentication (using the SSH_PASSWORD environment variable will be more secure than this CLI option)");
+      ("password",      boost::program_options::value<string>(), "password used for ssh authentication (using the SSH_PASSWORD environment variable will be more secure than this CLI option)")
+      ("jail-path",     boost::program_options::value<string>(), "freebsd jail path")
+      ;
   }
 
   void initialize_options()
@@ -79,13 +83,23 @@ public:
     try
     {
       Ssh::Session ssh;
+      bool initialize_properly;
 
       initialize_options();
       connect();
+      probe_target_type();
+
+      initialize_properly = ApplicationUserDeploy::initialize_target()
+                         && ApplicationPackageDeploy::initialize_target()
+                         && ApplicationPermissionDeploy::initialize_target()
+                         && ApplicationServiceDeploy::initialize_target();
+      if (!initialize_properly)
+        throw std::runtime_error("could not properly initialize deployer for target");
+
       prepare_application_user();
       install_application();
       set_permissions();
-      setup_systemctl();
+      deploy_service();
       Crails::cli_notification("crails-deploy", "Deployed successfully", "success");
     }
     catch (const std::exception& err)
@@ -106,18 +120,22 @@ public:
       ssh.authentify_with_password(password);
   }
 
-  void setup_systemctl()
+  void probe_target_type()
   {
-    systemctl_operation("restart");
-    systemctl_operation("enable");
-  }
+    std::stringstream result;
 
-  int systemctl_operation(const std::string& operation)
-  {
-    stringstream command;
-    if (sudo) command << "sudo ";
-    command << " systemctl " << operation << ' ' << app_name << ".service";
-    return ssh.exec(command.str(), std_out);
+    if (ssh.exec("uname -a | cut -d' ' -f1", result) == 0)
+    {
+      std::string system_name = result.str();
+      if (system_name == "Linux")
+        target_type = LinuxTarget;
+      else if (system_name == "FreeBSD")
+        target_type = FreeBSDTarget;
+      else
+        throw std::runtime_error("unsupported target system `" + system_name + '`');
+    }
+    else
+      throw std::runtime_error("failed to probe system on the remote target");
   }
 };
 

@@ -1,4 +1,5 @@
 libs =
+import libs += libboost-program-options%lib{boost_program_options}
 import libs += libcrails-cli%lib{crails-cli}
 import libs += libcrails-ssh%lib{crails-ssh}
 import libs += libcrails-logger%lib{crails-logger}
@@ -6,4 +7,4 @@ import libs += libcrails-logger%lib{crails-logger}
 exe{crails-deploy}: {hxx ixx txx cxx}{**} $libs testscript
 
 cxx.poptions =+ "-I$out_root" "-I$src_root"
-cxx.loptions =+ "-Wl,--start-group" -lssh -lcrypto -lssl -lboost_program_options
+cxx.loptions =+ "-Wl,--start-group" -lssh

@@ -2,6 +2,12 @@
 #include <string>
 #include <crails/cli/project_variables.hpp>
 
+enum DeployTargetType
+{
+  LinuxTarget,
+  FreeBSDTarget
+};
+
 struct ApplicationDeploySettings
 {
   Crails::ProjectVariables project_variables;
@@ -17,6 +23,8 @@ struct ApplicationDeploySettings
   std::string password;
   std::string package;
   std::string tmp_filepath, tmp_filename;
+  std::string freebsd_jail_root;
+  DeployTargetType target_type;
 
   ApplicationDeploySettings() : project_variables(".crails")
   {

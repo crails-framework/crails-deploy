@@ -34,7 +34,7 @@ public:
       ("verbose,v",     "enable verbose mode")
       ("sudo",          "administrative tasks will require root permissions")
       ("package,p",     boost::program_options::value<string>(), "application package (.tar.gz)")
-      ("hostname,h",    boost::program_options::value<string>(), "deployment target")
+      ("hostname,o",    boost::program_options::value<string>(), "deployment target")
       ("deploy-user,d", boost::program_options::value<string>(), "user performing the deployment")
       ("root,r",        boost::program_options::value<string>(), "remote install directory")
       ("user,u",        boost::program_options::value<string>(), "user which will run the application")

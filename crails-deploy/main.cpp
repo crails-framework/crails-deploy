@@ -127,9 +127,9 @@ public:
     if (ssh.exec("uname -a | cut -d' ' -f1", result) == 0)
     {
       std::string system_name = result.str();
-      if (system_name == "Linux")
+      if (system_name.find("Linux") != std::string::npos)
         target_type = LinuxTarget;
-      else if (system_name == "FreeBSD")
+      else if (system_name.find("FreeBSD") != std::string::npos)
         target_type = FreeBSDTarget;
       else
         throw std::runtime_error("unsupported target system `" + system_name + '`');

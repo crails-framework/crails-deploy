@@ -25,24 +25,22 @@ void ApplicationPermissionDeploy::set_permissions()
   );
   interface->set_permissions_on(
     root + "/share/" + app_name,
-    "gu+r,o-rwx"
+    "gu+r-w,o-rwx"
   );
   interface->set_permissions_on(
     root + "/bin/" + app_name,
-    "gu+rx,o-rwx"
+    "u+rx-w,g+r-wx,o-rwx"
   );
 }
 
 void PermissionDeployInterface::set_permissions_on(const std::string& target, const std::string permissions, std::string command_prefix)
 {
-  auto channel = ssh.make_channel();
-
   if (sudo)
     command_prefix = "sudo " + command_prefix;
   int rc =
-    channel->exec(command_prefix + command_chown(target), null_output) +
-    channel->exec(command_prefix + command_chgrp(target), null_output) +
-    channel->exec(command_prefix + command_chmod(target, permissions), null_output);
+    ssh.exec(command_prefix + command_chown(target), null_output) +
+    ssh.exec(command_prefix + command_chgrp(target), null_output) +
+    ssh.exec(command_prefix + command_chmod(target, permissions), null_output);
   if (rc != 0)
     throw std::runtime_error("could not set permissions");
 }

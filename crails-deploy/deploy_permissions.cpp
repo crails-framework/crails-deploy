@@ -29,7 +29,7 @@ void ApplicationPermissionDeploy::set_permissions()
   );
   interface->set_permissions_on(
     root + "/bin/" + app_name,
-    "u+rx-w,g+r-wx,o-rwx"
+    "ug+rx-w,o-rwx"
   );
 }
 

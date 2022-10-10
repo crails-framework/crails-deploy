@@ -13,13 +13,22 @@ public:
   void enable()  override { systemctl_operation("enable"); }
   void disable() override { systemctl_operation("disable"); }
 
+  void reload_service_files() override
+  {
+    std::stringstream command;
+
+    if (sudo) command << "sudo ";
+    command << "systemctl daemon-reload";
+    ssh.exec(command.str(), std_out);
+  }
+
 private:
   int systemctl_operation(const std::string& operation)
   {
     std::stringstream command;
 
     if (sudo) command << "sudo ";
-    command << " systemctl " << operation << ' ' << app_name << ".service";
+    command << "systemctl " << operation << ' ' << app_name << ".service";
     return ssh.exec(command.str(), std_out);
   }
 };

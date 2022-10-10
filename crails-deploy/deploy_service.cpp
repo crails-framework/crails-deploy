@@ -15,6 +15,7 @@ bool ApplicationServiceDeploy::initialize_target()
 
 void ApplicationServiceDeploy::deploy_service()
 {
+  interface->reload_service_files();
   interface->enable();
   interface->stop();
   interface->start();

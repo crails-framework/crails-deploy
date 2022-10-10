@@ -28,4 +28,5 @@ public:
   virtual void stop() = 0;
   virtual void enable() = 0;
   virtual void disable() = 0;
+  virtual void reload_service_files() {};
 };

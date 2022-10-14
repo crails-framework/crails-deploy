@@ -11,7 +11,8 @@ The deployment service can also use `user` and `group` settings: in such case, i
 restrictive permissions on the `bin` and `share` directory of your application, to ensure that the deployed files can only be run and read by
 the web service, and can only be modified by the administrator of the machine.
 
-The package is expected to provide a service file, designed for `systemctl` or `rc` (the former for Linux targets, the latter for FreeBSD targets).
+The package is expected to provide a service file, designed for `systemctl` or `rc` (the former for Linux targets, the latter for FreeBSD targets):
+at the end of the deployment, crails-deploy will enable and restart your service.
 
 ## Installing
 
@@ -23,15 +24,28 @@ We also provide an install script which should take care of everything. Just run
 bash <(curl -s "https://raw.githubusercontent.com/crails-framework/crails-deploy/master/install.sh")
 ```
 
+You will need to install `libssh` (`libssh-dev` for Debian, `libssh-devel` for Fedora) before installing crails-deploy.
+
 ## Usage
 
-Here's an example, deploying to `ubuntu@192.168.0.15`, deploying the package `archive.tar.gz` to be run by the `webapp` user:
+Here's an example, deploying the package `archive.tar.gz` to `ubuntu@192.168.0.15`, to be run by the `webapp` user:
 
 ```
-$ crails-deploy --package archive.tar.gz --hostname 192.168.0.15 --deploy-user ubuntu --pubkey --sudo --user webapp --group webapp
+$ crails-deploy \
+  --package archive.tar.gz \
+  --app-name myapp \
+  --hostname 192.168.0.15 \
+  --deploy-user ubuntu \
+  --pubkey \
+  --sudo \
+  --user webapp \
+  --group webapp
 ```
 
-There are a few options at your disposal, you may explore these using:
+Using the `app-name` option to set our application name to `myapp` means that the runtime directory for our webservice will be `/var/myapp`, the logs
+will be located at `/var/log/myapp`, and the service will be named `myapp` in your service manager (systemctl or rc, depending on your system).
+
+There are a few more options at your disposal, you may explore these using:
 
 ```
 $ crails-deploy --help

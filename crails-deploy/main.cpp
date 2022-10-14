@@ -34,6 +34,7 @@ public:
       ("verbose,v",     "enable verbose mode")
       ("sudo",          "administrative tasks will require root permissions")
       ("package,p",     boost::program_options::value<string>(), "application package (.tar.gz)")
+      ("app-name,a",    boost::program_options::value<string>(), "application name")
       ("hostname,o",    boost::program_options::value<string>(), "deployment target")
       ("deploy-user,d", boost::program_options::value<string>(), "user performing the deployment")
       ("root,r",        boost::program_options::value<string>(), "remote install directory")
@@ -54,7 +55,12 @@ public:
     if (!options.count("package"))
       throw std::runtime_error("missing required option --package");
     sudo      = options.count("sudo") > 0;
-    app_name  = project_variables.variable("name");
+    if (options.count("app-name"))
+      app_name = options["app-name"].as<string>();
+    else
+      app_name = project_variables.variable("name");
+    if (app_name.length() == 0)
+      throw std::runtime_error("missing app-name option");
     package   = options["package"].as<string>();
     app_user  = options.count("user") ? options["user"].as<string>() : app_name;
     app_group = options.count("group") ? options["group"].as<string>() : app_user;

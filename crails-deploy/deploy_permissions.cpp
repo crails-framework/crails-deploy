@@ -48,8 +48,9 @@ void PermissionDeployInterface::set_permissions_on(const std::string& target, co
 std::string PermissionDeployInterface::command_chown(const std::string& target)
 {
   stringstream command;
+  string user = target == runtime_directory ? app_user : "root";
 
-  command << "chown -R \"" << app_user << "\" \"" << target << '"';
+  command << "chown -R \"" << user << "\" \"" << target << '"';
   return command.str();
 }
 

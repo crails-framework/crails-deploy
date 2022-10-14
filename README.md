@@ -1,15 +1,13 @@
 # crails-deploy
 
 crails-deploy is a deployment tool designed to deploy web services on a remote Linux or FreeBSD server. The packages
-are designed to be extracted at the root of the remote server, using the [FHS](https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard). On top
+are designed to be extracted at the root of the remote server, using the [Fileststem Hierarchy Standard](https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard). On top
 of extracting the content of the package to the root of the remote server, the deployment service will create:
 
 * A directory in `/var` for the application to have a place to write files to,
 * A directory in `/var/log` for the application to store its logs
-
-The deployment service can also use `user` and `group` settings: in such case, it will create the required user and groups (if needed), and set
-restrictive permissions on the `bin` and `share` directory of your application, to ensure that the deployed files can only be run and read by
-the web service, and can only be modified by the administrator of the machine.
+* A user and a group to run your webservice with
+* Restrictive permissions to prevent your application from modifying itself in case of security breach
 
 The package is expected to provide a service file, designed for `systemctl` or `rc` (the former for Linux targets, the latter for FreeBSD targets):
 at the end of the deployment, crails-deploy will enable and restart your service.

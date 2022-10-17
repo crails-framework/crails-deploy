@@ -10,4 +10,7 @@ role: prerequisite
 location: https://github.com/crails-framework/libcrails-ssh.git#master
 :
 role: prerequisite
+location: https://github.com/crails-framework/libcrails-readfile.git#master
+:
+role: prerequisite
 location: https://github.com/crails-framework/libcrails-logger.git#master

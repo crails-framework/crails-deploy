@@ -61,3 +61,9 @@ int PackageDeployInterface::mkdir(const std::string& path)
   command << "mkdir -p \"" << path << '"';
   return ssh.exec(command.str(), null_output);
 }
+
+int PackageDeployInterface::push_text(const std::string& text, const std::string& target)
+{
+  ssh.make_scp_session("/", Crails::Ssh::WriteMode)->push_text(text, target);
+  return 0;
+}

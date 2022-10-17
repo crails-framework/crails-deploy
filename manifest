@@ -9,5 +9,5 @@ email: michael@unetresgrossebite.com
 #build-error-email: michael@unetresgrossebite.com
 depends: * build2 >= 0.15.0
 depends: * bpkg >= 0.15.0
-depends: { libcrails-logger libcrails-cli libcrails-ssh } ^2.0.0
+depends: { libcrails-logger libcrails-cli libcrails-ssh libcrails-readfile } ^2.0.0
 depends: libboost-program-options >= 1.78.0

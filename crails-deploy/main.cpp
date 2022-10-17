@@ -8,6 +8,7 @@
 #include "deploy_permissions.hpp"
 #include "deploy_user.hpp"
 #include "deploy_service.hpp"
+#include <crails/read_file.hpp>
 
 using namespace std;
 using namespace Crails;
@@ -35,16 +36,35 @@ public:
       ("sudo",          "administrative tasks will require root permissions")
       ("package,p",     boost::program_options::value<string>(), "application package (.tar.gz)")
       ("app-name,a",    boost::program_options::value<string>(), "application name")
+      ("app-port,p",    boost::program_options::value<unsigned short>(), "network port the application will listen to")
+      ("app-host",      boost::program_options::value<string>(), "network host the application will listen to")
       ("hostname,o",    boost::program_options::value<string>(), "deployment target")
       ("deploy-user,d", boost::program_options::value<string>(), "user performing the deployment")
       ("root,r",        boost::program_options::value<string>(), "remote install directory")
       ("user,u",        boost::program_options::value<string>(), "user which will run the application")
       ("group,g",       boost::program_options::value<string>(), "user group which will run the application")
-      ("runtime-path",  boost::program_options::value<string>(), "runtime path (defaults to /var/application-name)")
+      ("runtime-path",  boost::program_options::value<string>(), "runtime path (defaults to /var/lib/application-name)")
+      ("start",         boost::program_options::value<string>(), "command to start the service")
+      ("stop",          boost::program_options::value<string>(), "command to stop the service")
+      ("env,e",         boost::program_options::value<vector<string>>()->multitoken(), "list of environment variables or files (such as: -e VAR1=value1 VAR2=value2 /tmp/env)")
       ("pubkey", "ssh authentication using rsa public key")
       ("password",      boost::program_options::value<string>(), "password used for ssh authentication (using the SSH_PASSWORD environment variable will be more secure than this CLI option)")
       ("jail-path",     boost::program_options::value<string>(), "freebsd jail path")
       ;
+  }
+
+  void initialize_environment()
+  {
+    for (const string& param : options["env"].as<vector<string>>())
+    {
+      string contents;
+
+      if (param.find('=') != string::npos)
+        contents = param;
+      else if (!Crails::read_file(param, contents))
+        cerr << "/!\\ Could not read environment file `" << param << '`' << endl;
+      environment_variables.push_back(contents);
+    }
   }
 
   void initialize_options()
@@ -64,8 +84,9 @@ public:
     package   = options["package"].as<string>();
     app_user  = options.count("user") ? options["user"].as<string>() : app_name;
     app_group = options.count("group") ? options["group"].as<string>() : app_user;
-    runtime_directory = "/var/" + app_name;
+    runtime_directory = "/var/lib/" + app_name;
     log_directory = "/var/log/" + app_name;
+    environment_file_path = "/usr/share/crails-deploy/" + app_name;
     if (env_password)
       password = env_password;
     if (options.count("hostname"))
@@ -78,6 +99,16 @@ public:
       root = options["root"].as<string>();
     if (options.count("runtime-path"))
       runtime_directory = options["runtime-path"].as<string>();
+    if (options.count("start"))
+      start_command = options["start"].as<string>();
+    if (options.count("stop"))
+      stop_command = options["stop"].as<string>();
+    if (options.count("env"))
+      initialize_environment();
+    if (options.count("app-port"))
+      app_port = options["app-port"].as<unsigned short>();
+    if (options.count("app-host"))
+      app_host = options["app-host"].as<std::string>();
     tmp_filename = "crails." + app_name + ".tar.gz";
     tmp_filepath = "/tmp/" + tmp_filename;
     if (!std::filesystem::is_regular_file(package))
@@ -104,8 +135,9 @@ public:
 
       prepare_application_user();
       install_application();
-      set_permissions();
       deploy_service();
+      set_permissions();
+      restart_service();
       Crails::cli_notification("crails-deploy", "Deployed successfully", "success");
     }
     catch (const std::exception& err)

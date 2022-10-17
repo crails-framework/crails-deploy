@@ -31,6 +31,10 @@ void ApplicationPermissionDeploy::set_permissions()
     root + "/bin/" + app_name,
     "ug+rx-w,o-rwx"
   );
+  interface->set_permissions_on(
+    environment_file_path,
+    "g+r-wx,o-rwx"
+  );
 }
 
 void PermissionDeployInterface::set_permissions_on(const std::string& target, const std::string permissions, std::string command_prefix)

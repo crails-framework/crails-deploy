@@ -18,6 +18,7 @@ private:
   void deploy_package();
   void create_runtime_directory();
   void create_log_directory();
+  std::string generate_environment_file() const;
 };
 
 class PackageDeployInterface :
@@ -30,4 +31,5 @@ public:
 
   virtual int extract(const std::string& tarball, const std::string& target);
   virtual int mkdir(const std::string& path);
+  virtual int push_text(const std::string& text, const std::string& target);
 };

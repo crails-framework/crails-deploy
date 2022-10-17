@@ -20,4 +20,9 @@ public:
       return PackageDeployInterface::mkdir(freebsd_jail_root + path);
     return PackageDeployInterface::mkdir(path);
   }
+
+  int push_text(const std::string& text, const std::string& target) override
+  {
+    return PackageDeployInterface::push_text(text, freebsd_jail_root + target);
+  }
 };

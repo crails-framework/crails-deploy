@@ -71,14 +71,16 @@ public:
   {
     const char* env_password = std::getenv("SSH_PASSWORD");
 
-    project_variables.initialize();
     if (!options.count("package"))
       throw std::runtime_error("missing required option --package");
     sudo      = options.count("sudo") > 0;
     if (options.count("app-name"))
       app_name = options["app-name"].as<string>();
     else
+    {
+      project_variables.initialize();
       app_name = project_variables.variable("name");
+    }
     if (app_name.length() == 0)
       throw std::runtime_error("missing app-name option");
     package   = options["package"].as<string>();

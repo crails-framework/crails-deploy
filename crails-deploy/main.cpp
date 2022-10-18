@@ -50,6 +50,7 @@ public:
       ("pubkey", "ssh authentication using rsa public key")
       ("password",      boost::program_options::value<string>(), "password used for ssh authentication (using the SSH_PASSWORD environment variable will be more secure than this CLI option)")
       ("jail-path",     boost::program_options::value<string>(), "freebsd jail path")
+      ("skip-restart",  "does not enable, start and/or restart the service")
       ;
   }
 
@@ -139,7 +140,8 @@ public:
       install_application();
       deploy_service();
       set_permissions();
-      restart_service();
+      if (!options.count("skip-restart"))
+        restart_service();
       Crails::cli_notification("crails-deploy", "Deployed successfully", "success");
     }
     catch (const std::exception& err)

@@ -60,8 +60,8 @@ the following variables:
 
 ```
 APPLICATION_NAME # value of the --app-name option
-APPLICATION_HOST # value of the --hostname option
-APPLICATION_PORT # value of the --app-port option
+APPLICATION_HOST # value of the --app-host option, or 0.0.0.0 if unspecified
+APPLICATION_PORT # value of the --app-port option, or 80 if unspecified
 VAR_DIRECTORY    # value of the --runtime-path option, or /var/lib/$APPLICATION_NAME if unspecified 
 ```
 

@@ -13,11 +13,6 @@
 using namespace std;
 using namespace Crails;
 
-namespace Crails
-{
-  const Logger::Symbol Logger::log_level = Debug;
-}
-
 class DeployCommand : public Crails::Command,
   private ApplicationUserDeploy,
   private ApplicationPackageDeploy,

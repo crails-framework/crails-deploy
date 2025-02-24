@@ -1,6 +1,6 @@
 : 1
 name: crails-deploy
-version: 1.0.0
+version: 2.0.0
 summary: crails deployment command for the crails framework
 license: BSD-C3
 description-file: README.md
